@@ -9,6 +9,7 @@ contract MeuContrato {
     constructor(uint _preco) {
         vendedor = msg.sender;
         preco = _preco;
+        // preco = _preco * 1 ether;
     }
     
     function depositar() public payable {
@@ -16,7 +17,7 @@ contract MeuContrato {
         balance = balance + msg.value;
     }
     
-    function sacar(uint value) public payable {
+    function sacar(uint value) public {
         require(value <= balance, "Saldo Insuficiente");
         payable(vendedor).transfer(value);
         balance = balance - value;
