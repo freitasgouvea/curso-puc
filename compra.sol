@@ -8,7 +8,7 @@ contract CompraVenda {
     string public matricula; 
     string public cartorio;
     
-    string dataDeVencimento;
+    uint public dataDeVencimento;
     
     bool quitado = false;
     
@@ -43,6 +43,7 @@ contract CompraVenda {
         require(valorEmAberto == valorTotal, "Entrada ja foi paga.");
         comprador = msg.sender;
         valorEmAberto = valorTotal - _valorPagamento;
+        dataDeVencimento = block.timestamp + 31 * 86400;
         return(valorEmAberto, "valor em aberto");
     }
     
@@ -50,6 +51,8 @@ contract CompraVenda {
         require(_valorPagamento == valorDaParcela, "Valor da parcela incorreto");
         require(valorEmAberto <= valorTotal-valorDaEntrada, "Entrada nao foi foi paga.");
         require(comprador == msg.sender, "Obrigado, somente o comprador pode executar essa funcao");
+        require(block.timestamp <= dataDeVencimento, "Parcela com data de vencimento vencida");
+        dataDeVencimento = dataDeVencimento + 31 * 86400;
         valorEmAberto = valorEmAberto - _valorPagamento;
         return(valorEmAberto, "valor em aberto");
     }
@@ -60,6 +63,7 @@ contract CompraVenda {
     }
     
     function valorDaMulta(uint _porcentagemDaMulta) public view returns(uint, string memory) {
+        require(comprador == msg.sender || vendedor == msg.sender, "Apenas o comprador ou vendedor podem executar");
         uint multa = _porcentagemDaMulta*valorTotal/100;
         return(multa, "valor da multa");
     }
