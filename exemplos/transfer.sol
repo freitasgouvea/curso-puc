@@ -12,6 +12,11 @@ contract MeuContrato {
         // preco = _preco * 1 ether;
     }
     
+    function pagar() public payable {
+        require(msg.value == preco, "Valor incorreto");
+        payable(vendedor).transfer(msg.value);
+    }
+    
     function depositar() public payable {
         require(msg.value == preco, "Valor incorreto");
         balance = balance + msg.value;
