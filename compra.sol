@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity 0.8.9;
 
 contract CompraVenda {
@@ -26,7 +28,7 @@ contract CompraVenda {
         string memory _matricula,
         string memory _cartorio,
         address _vendedor
-        ) 
+        )
     {
         vendedor = _vendedor;
         valorTotal = _valorTotal;
@@ -38,22 +40,24 @@ contract CompraVenda {
         valorDaParcela = funcaoValorParcela();
     }
     
-    function pagarEntrada(uint _valorPagamento) public returns (uint, string memory) {
-        require(_valorPagamento == valorDaEntrada, "Valor da entrada incorreto.");
+    function pagarEntrada() public payable returns (uint, string memory) {
+        require(msg.value == valorDaEntrada, "Valor da entrada incorreto.");
         require(valorEmAberto == valorTotal, "Entrada ja foi paga.");
         comprador = msg.sender;
-        valorEmAberto = valorTotal - _valorPagamento;
+        payable(vendedor).transfer(msg.value);
+        valorEmAberto = valorTotal - msg.value;
         dataDeVencimento = block.timestamp + 31 * 86400;
         return(valorEmAberto, "valor em aberto");
     }
     
-    function pagarParcela(uint _valorPagamento) public returns (uint, string memory) {
-        require(_valorPagamento == valorDaParcela, "Valor da parcela incorreto");
+    function pagarParcela() public payable returns (uint, string memory) {
+        require(msg.value == valorDaParcela, "Valor da parcela incorreto");
         require(valorEmAberto <= valorTotal-valorDaEntrada, "Entrada nao foi foi paga.");
         require(comprador == msg.sender, "Obrigado, somente o comprador pode executar essa funcao");
         require(block.timestamp <= dataDeVencimento, "Parcela com data de vencimento vencida");
+        payable(vendedor).transfer(msg.value);
         dataDeVencimento = dataDeVencimento + 31 * 86400;
-        valorEmAberto = valorEmAberto - _valorPagamento;
+        valorEmAberto = valorEmAberto - msg.value;
         return(valorEmAberto, "valor em aberto");
     }
     
