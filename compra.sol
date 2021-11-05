@@ -12,7 +12,7 @@ contract CompraVenda {
     
     uint public dataDeVencimento;
     
-    bool quitado = false;
+    bool public quitado = false;
     
     uint public valorTotal;
     uint public valorDaEntrada;
@@ -21,10 +21,14 @@ contract CompraVenda {
     uint public valorDaParcela;
     uint public valorEmAberto;
     
+    event PagamentoEntrada(address _comprador, uint _valorPagamento);
+    event PagamentoParcela(address _comprador, uint _valorPagamento);
+    
     constructor(
         uint _valorTotal,
         uint _valorDaEntrada,
         uint _quantidadeDeParcelas,
+        uint _porcentagemDaMulta,
         string memory _matricula,
         string memory _cartorio,
         address _vendedor
@@ -34,6 +38,7 @@ contract CompraVenda {
         valorTotal = _valorTotal;
         valorDaEntrada = _valorDaEntrada;
         quantidadeDeParcelas = _quantidadeDeParcelas;
+        porcentagemDaMulta = _porcentagemDaMulta;
         matricula = _matricula;
         cartorio = _cartorio;
         valorEmAberto = valorTotal;
@@ -47,6 +52,7 @@ contract CompraVenda {
         payable(vendedor).transfer(msg.value);
         valorEmAberto = valorTotal - msg.value;
         dataDeVencimento = block.timestamp + 31 * 86400;
+        emit PagamentoEntrada(comprador, msg.value);
         return(valorEmAberto, "valor em aberto");
     }
     
@@ -58,6 +64,10 @@ contract CompraVenda {
         payable(vendedor).transfer(msg.value);
         dataDeVencimento = dataDeVencimento + 31 * 86400;
         valorEmAberto = valorEmAberto - msg.value;
+        if(valorEmAberto == 0) {
+            quitado = true;
+        }
+        emit PagamentoParcela(comprador, msg.value);
         return(valorEmAberto, "valor em aberto");
     }
     
@@ -66,10 +76,15 @@ contract CompraVenda {
         return(calculoValorParcela);
     }
     
-    function valorDaMulta(uint _porcentagemDaMulta) public view returns(uint, string memory) {
+    function valorDaMulta() public view returns(uint) {
         require(comprador == msg.sender || vendedor == msg.sender, "Apenas o comprador ou vendedor podem executar");
-        uint multa = _porcentagemDaMulta*valorTotal/100;
-        return(multa, "valor da multa");
+        uint multa;
+        if(block.timestamp > dataDeVencimento + 30 * 86400 && dataDeVencimento != 0){
+            multa = porcentagemDaMulta*valorTotal/100;
+        } else {
+            multa = 0;   
+        }
+        return(multa);
     }
     
 }
