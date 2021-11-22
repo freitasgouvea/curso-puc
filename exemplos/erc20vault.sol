@@ -18,7 +18,6 @@ contract MyVault {
     IERC20 public coin;
     
     constructor(address _erc20Address) {
-        owner = msg.sender;
         coin = IERC20(_erc20Address);
     }
     
