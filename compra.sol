@@ -49,8 +49,8 @@ contract CompraVenda {
         require(msg.value == valorDaEntrada, "Valor da entrada incorreto.");
         require(valorEmAberto == valorTotal, "Entrada ja foi paga.");
         comprador = msg.sender;
-        payable(vendedor).transfer(msg.value);
         valorEmAberto = valorTotal - msg.value;
+        payable(vendedor).transfer(msg.value);
         dataDeVencimento = block.timestamp + 31 * 86400;
         emit PagamentoEntrada(comprador, msg.value);
         return(valorEmAberto, "valor em aberto");
@@ -61,9 +61,9 @@ contract CompraVenda {
         require(valorEmAberto <= valorTotal-valorDaEntrada, "Entrada nao foi foi paga.");
         require(comprador == msg.sender, "Obrigado, somente o comprador pode executar essa funcao");
         require(block.timestamp <= dataDeVencimento, "Parcela com data de vencimento vencida");
-        payable(vendedor).transfer(msg.value);
         dataDeVencimento = dataDeVencimento + 31 * 86400;
         valorEmAberto = valorEmAberto - msg.value;
+        payable(vendedor).transfer(msg.value);
         if(valorEmAberto == 0) {
             quitado = true;
         }
