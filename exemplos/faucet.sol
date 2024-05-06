@@ -1,5 +1,3 @@
-
-  
 //SPDX-License-Identifier: UNLICENSED
 
 pragma solidity 0.8.9;
@@ -17,25 +15,26 @@ interface IERC20 {
 contract Faucet {
     
     uint256 public balance;
+    uint256 public limit;
     IERC20 public coin;
     
-    constructor(address _erc20Address) {
+    constructor(address _erc20Address, uint256 _limit) {
         coin = IERC20(_erc20Address);
+        limit = _limit;
     }
     
-    function depositarTokens(uint _quantity) public returns(bool) {
-        require(coin.allowance(msg.sender,address(this)) >= _quantity, "Faucet: aprovacao insuficente" );
-        require(coin.transferFrom(msg.sender, address(this), _quantity), "Faucet: falha na transferencia");
+    function deposit(uint _quantity) public returns(bool) {
+        require(coin.allowance(msg.sender,address(this)) >= _quantity, "Faucet: insufficient approval" );
+        require(coin.transferFrom(msg.sender, address(this), _quantity), "Faucet: failed transfer from");
         balance += _quantity;
         return true;
     }
     
-    function sacarTokens() public returns(bool) {
-        require(balance >= 10000, "Faucet: balanco insuficente");
-        require(coin.balanceOf(msg.sender) < 100, "Faucet: balanco maior que 100 Coins");
-        require(coin.transfer(msg.sender, 10000), "Faucet: falha na transferencia");
-        balance -= 10000;
+    function withdraw(uint _quantity) public returns(bool) {
+        require(_quantity < _limit, "Faucet: request more than limit" );
+        require(balance >= _quantity, "Faucet: isufficient faucet balance");
+        require(coin.transfer(msg.sender, _quantity), "Faucet: failed transfer");
+        balance -= _quantity;
         return true;
     }
-    
 }
