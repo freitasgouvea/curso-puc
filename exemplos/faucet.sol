@@ -31,7 +31,7 @@ contract Faucet {
     }
     
     function withdraw(uint _quantity) public returns(bool) {
-        require(_quantity < _limit, "Faucet: request more than limit" );
+        require(_quantity < limit, "Faucet: request more than limit" );
         require(balance >= _quantity, "Faucet: isufficient faucet balance");
         require(coin.transfer(msg.sender, _quantity), "Faucet: failed transfer");
         balance -= _quantity;
